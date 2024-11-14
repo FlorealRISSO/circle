@@ -442,7 +442,9 @@
         }
 
         document.getElementById('returnButton').addEventListener('click', function () {
-            window.location.href = '/delete-session-guest';  // Redirects to the /deleteSession page
+            if (confirm('Are you sure you want to quit? This action cannot be undone.')) {
+            window.location.href = '/delete-session-guest';
+            }
         });
 
         fetchButton.click()
