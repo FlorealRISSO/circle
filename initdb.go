@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS SessionsCircles (
 CREATE TABLE IF NOT EXISTS SuperKeys (
     id SERIAL PRIMARY KEY,
     superkey VARCHAR(64) NOT NULL UNIQUE,
-    id_user INTEGER NOT NULL,
+    id_user INTEGER,
     FOREIGN KEY (id_user) REFERENCES Users(id) ON DELETE CASCADE
 );
 `
