@@ -1249,6 +1249,7 @@ func main() {
 
 	// General route
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { LoginPage(db, w, r) })
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// Register
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) { Register(db, w, r) })
