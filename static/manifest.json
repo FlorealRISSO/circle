@@ -10,10 +10,6 @@
   "theme_color": "#FFFFFF",
   "icons": [
     {
-      "src": "1024x1024.png",
-      "sizes": "1024x1024"
-    },
-    {
       "src": "48x48.png",
       "sizes": "48x48",
       "type": "image/png"
