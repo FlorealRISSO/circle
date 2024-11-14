@@ -311,7 +311,7 @@
         const id = getQueryParameter('id');
         const name = getQueryParameter('name');
         const addr = getQueryParameter('addr');
-        const waddr = `ws://${addr}/socket-guest/${id}`;
+        const waddr = `wss://${addr}/socket-guest/${id}`;
 
         const headerMessage = document.getElementById('header-message');
         headerMessage.innerHTML = `Connected to <span class="circle-name">${name}</span>`;
