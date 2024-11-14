@@ -13,6 +13,7 @@ RUN apk add --no-cache libc6-compat
 
 COPY --from=builder /app/server /server
 COPY --from=builder /app/public /public
+COPY --from=builder /app/static /static
 COPY --from=builder /app/superkeys.txt /superkeys.txt
 
 EXPOSE 8080
