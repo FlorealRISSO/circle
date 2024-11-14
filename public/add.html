@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Circle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        .guest-name {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #1f2937;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            position: relative;
+            cursor: wait;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            top: 50%;
+            left: 50%;
+            margin: -0.5rem 0 0 -0.5rem;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s linear infinite;
+        }
+
+        @keyframes button-loading-spinner {
+            from {
+                transform: rotate(0turn);
+            }
+
+            to {
+                transform: rotate(1turn);
+            }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #047857;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="alert" class="alert"></div>
+        <h1 id="header-message"></h1>
+
+        <div class="form-group">
+            <label for="circle-select">Choose a circle:</label>
+            <select id="circle-select">
+                <option value="">--Select a circle--</option>
+            </select>
+        </div>
+
+        <button id="add-btn" disabled>Add to Circle</button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const name = urlParams.get('name');
+
+        const headerMessage = document.getElementById('header-message');
+        headerMessage.innerHTML = `Add guest <span class="guest-name">${name}</span> to a circle`;
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        }
+
+        async function fetchCircles() {
+            try {
+                const select = document.getElementById('circle-select');
+                select.disabled = true;
+
+                const response = await fetch('fetch-circles');
+                const circles = await response.json();
+
+                circles.forEach(circle => {
+                    const option = document.createElement('option');
+                    option.value = circle.id;
+                    option.textContent = circle.name;
+                    select.appendChild(option);
+                });
+
+                select.disabled = false;
+            } catch (error) {
+                console.error('Error fetching circles:', error);
+                showAlert('Failed to load circles. Please try again.', 'error');
+            }
+        }
+
+        document.getElementById('circle-select').addEventListener('change', function () {
+            document.getElementById('add-btn').disabled = !this.value;
+        });
+
+        async function addToCircle() {
+            const button = document.getElementById('add-btn');
+            const select = document.getElementById('circle-select');
+            const circleId = select.value;
+
+            if (!circleId || !id) return;
+
+            try {
+                button.disabled = true;
+                button.classList.add('loading');
+                select.disabled = true;
+
+                const response = await fetch(`/add-to-circle/${id}/${circleId}`, {
+                    method: 'POST',
+                });
+
+                if (response.ok) {
+                    showAlert(`Successfully added ${name} to the circle!`, 'success');
+                } else {
+                    showAlert('Failed to add guest to the circle.', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding to circle:', error);
+                showAlert('An error occurred. Please try again.', 'error');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('loading');
+                select.disabled = false;
+            }
+        }
+
+        document.getElementById('add-btn').addEventListener('click', addToCircle);
+        fetchCircles();
+    </script>
+</body>
+
+</html>

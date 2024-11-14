@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        h1 {
+            color: #1f2937;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #members {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .member:hover {
+            transform: translateY(-3px);
+        }
+
+        button.delete-btn {
+            background-color: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        button.delete-btn:hover {
+            background-color: #ff4c4c;
+        }
+
+        button.connect-btn {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        button.connect-btn:hover {
+            background-color: #388e3c;
+        }
+
+
+        .submit-button {
+            padding: 0.75rem 1.5rem;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background: #45a049;
+        }
+
+        .circle-name {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .form-container {
+            width: 100%;
+        }
+
+        .form-container input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1 id="header-message"></h1>
+        </header>
+
+        <div class="form-container">
+            <form id="create-form" action="/create-circle" method="post">
+                <input type="text" id="circle-name" name="name" placeholder="Enter a circle name" required>
+                <input class="submit-button" id="formButton" type="submit" value="Create Circle">
+            </form>
+            <div id="error-message" class="error" style="display: none;"></div>
+        </div>
+
+        <section id="members" class="members-section">
+            <!-- Members will be dynamically inserted here -->
+        </section>
+
+        <button class="submit-button" id="fetchButton">Fetch Circles</button>
+    </div>
+
+
+    <script>
+        // Utility function to get URL query parameters
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        let name = getQueryParameter('name');
+        if (!name) {
+            name = 'a User';
+        }
+        const headerMessage = document.getElementById('header-message');
+        headerMessage.innerHTML = `Connected as <span class="circle-name">${name}</span>`;
+
+        const membersElement = document.getElementById('members');
+        const errorMessageDiv = document.getElementById("error-message");
+        const fetchButton = document.getElementById('fetchButton');
+        const form = document.getElementById("create-form");
+
+        fetchButton.addEventListener('click', function () {
+            fetch(`/fetch-circles`)
+                .then(response => response.json())
+                .then(members => renderMembers(members))
+                .catch(error => {
+                    membersElement.innerHTML = `Error loading members: ${error.message}`;
+                });
+        });
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const response = await fetch("/create-circle", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Circle created successfully!");
+                errorMessageDiv.style.display = "none";
+                form.reset();
+                fetchButton.click();
+            } else {
+                alert("Failed to create circle: " + (result.message || "An error occurred!"));
+                errorMessageDiv.textContent = result.message || "An error occurred!";
+                errorMessageDiv.style.display = "block";
+            }
+        });
+
+        function renderMembers(members) {
+            membersElement.innerHTML = ''
+            if (members === null) {
+                return
+            }
+            members.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.classList.add('member');
+                memberDiv.innerHTML = `
+            <span>${member.name}</span>
+            <button class="connect-btn">Connect</button>
+            <button class="delete-btn">Delete</button>
+        `;
+                memberDiv.querySelector('.delete-btn').onclick = () => deleteCircle(member.id, member.name, memberDiv);
+                memberDiv.querySelector('.connect-btn').onclick = () => connectCircle(member.id);
+                membersElement.appendChild(memberDiv);
+            });
+        }
+
+        function connectCircle(circleId) {
+            window.location.href = `/connect-user/${circleId}`;
+        }
+
+        // Delete member function
+        function deleteCircle(circleId, circleName, memberDiv) {
+            if (confirm(`Are you sure you want to delete circle ${circleName}?`)) {
+                fetch(`/delete-circle/${circleId}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === 'success') {
+                            alert(result.message);
+                            memberDiv.remove()
+                        } else {
+                            alert("Error deleting circle");
+                        }
+                    });
+            }
+        }
+
+        fetchButton.click()
+    </script>
+</body>
+
+</html>

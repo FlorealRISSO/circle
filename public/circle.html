@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        h1 {
+            color: #1f2937;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        #status {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #status.connecting {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+
+        #status.connected {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #6ee7b7;
+        }
+
+        #status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        #status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        #status.connecting::before {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #members {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .member:hover {
+            transform: translateY(-3px);
+        }
+
+        .connected {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .disconnected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        button.delete-btn {
+            background-color: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        button.delete-btn:hover {
+            background-color: #ff4c4c;
+        }
+
+        #sendContainer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #dropArea {
+            width: 100%;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            background: #f9fafb;
+            cursor: pointer;
+        }
+
+        #dropArea.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        #dropArea p {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        #browseButton {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        #browseButton:hover {
+            text-decoration: underline;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #fileInfo {
+            width: 100%;
+            padding: 0.75rem;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #374151;
+            display: none;
+        }
+
+        #fileInfo.visible {
+            display: block;
+        }
+
+        .file-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        #sendButton {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        #sendButton.visible {
+            display: block;
+        }
+
+        #sendButton:hover {
+            background: #1d4ed8;
+        }
+
+        #fetchButton {
+            padding: 0.75rem 1.5rem;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            display: block;
+            width: 100%;
+        }
+
+        #fetchButton:hover {
+            background: #45a049;
+        }
+
+        #returnButton {
+            padding: 0.75rem 1.5rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+        }
+
+        #returnButton:hover {
+            background: #ff4c4c
+        }
+
+        .circle-name {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1 id="header-message"></h1>
+        </header>
+
+        <div id="status" class="status"></div>
+
+        <section id="members" class="members-section">
+            <!-- Members will be dynamically inserted here -->
+        </section>
+
+        <div id="sendContainer">
+            <input type="file" id="fileInput" />
+            <div id="dropArea">
+                <p>Drag & drop your file here</p>
+                <p>or</p>
+                <button id="browseButton">Browse files</button>
+            </div>
+            <div id="fileInfo"></div>
+            <button id="sendButton">Send File</button>
+        </div>
+        <button id="fetchButton">Fetch members</button>
+        <button id="returnButton">Return</button>
+    </div>
+
+
+    <script>
+        // Utility function to get URL query parameters
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Initialize connection parameters
+        const id = getQueryParameter('id');
+        const name = getQueryParameter('name');
+        const addr = getQueryParameter('addr');
+        const waddr = `ws://${addr}/socket/${id}`;
+
+        const headerMessage = document.getElementById('header-message');
+        headerMessage.innerHTML = `Connected to <span class="circle-name">${name}</span>`;
+
+        const statusElement = document.getElementById('status');
+        const sendButton = document.getElementById('sendButton');
+        const sendContainer = document.getElementById('sendContainer');
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const browseButton = document.getElementById('browseButton');
+        const fileInfo = document.getElementById('fileInfo');
+        const fetchButton = document.getElementById('fetchButton');
+
+        const socket = new WebSocket(waddr);
+
+        socket.onopen = () => {
+            statusElement.textContent = 'Connected';
+            statusElement.className = 'connected';
+            sendContainer.classList.add('visible');
+        };
+
+        socket.onerror = (error) => {
+            statusElement.textContent = 'Connection failed';
+            statusElement.className = 'error';
+        };
+
+        socket.onclose = () => {
+            statusElement.textContent = 'Connection closed';
+            statusElement.className = 'error';
+            sendContainer.classList.remove('visible');
+        };
+
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === "file" && message.data) {
+                const byteArray = new Uint8Array(atob(message.data).split('').map(c => c.charCodeAt(0)));
+                const blob = new Blob([byteArray]);
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = message.filename || "downloaded_file";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+
+        function updateFileInfo(file) {
+            const size = (file.size / 1024 / 1024).toFixed(2);
+            fileInfo.innerHTML = `
+                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                    <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+                ${file.name} (${size} MB)
+            `;
+            fileInfo.classList.add('visible');
+            sendButton.classList.add('visible');
+        }
+
+        function sendFile(file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const fileData = {
+                    type: "file",
+                    data: btoa(String.fromCharCode.apply(null, new Uint8Array(reader.result))),
+                    filename: file.name
+                };
+                socket.send(JSON.stringify(fileData));
+                fileInfo.classList.remove('visible');
+                sendButton.classList.remove('visible');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        browseButton.onclick = () => fileInput.click();
+
+        fileInput.onchange = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                updateFileInfo(file);
+                sendButton.onclick = () => sendFile(file);
+            }
+        };
+
+        dropArea.ondragover = (event) => {
+            event.preventDefault();
+            dropArea.classList.add('dragover');
+        };
+
+        dropArea.ondragleave = () => {
+            dropArea.classList.remove('dragover');
+        };
+
+        dropArea.ondrop = (event) => {
+            event.preventDefault();
+            dropArea.classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                updateFileInfo(file);
+                sendButton.onclick = () => sendFile(file);
+            }
+        };
+
+        const membersElement = document.getElementById('members');
+        // Fetch circle members on page load
+
+        fetchButton.addEventListener('click', function () {
+            fetch(`/circle-members/${id}`)
+                .then(response => response.json())
+                .then(members => renderMembers(members))
+                .catch(error => {
+                    membersElement.innerHTML = `Error loading members: ${error.message}`;
+                });
+        });
+
+        // Render circle members and add delete functionality
+        function renderMembers(members) {
+            membersElement.innerHTML = ''
+            members.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.classList.add('member');
+                memberDiv.innerHTML = `
+            <span>${member.name}</span>
+            <span class="${member.status === 1 ? 'connected' : 'disconnected'}">${member.status === 1 ? 'Connected' : 'Disconnected'}</span>
+            <button class="delete-btn">Delete</button>
+        `;
+                memberDiv.querySelector('.delete-btn').onclick = () => deleteMember(member.id, member.name, memberDiv);
+                membersElement.appendChild(memberDiv);
+            });
+        }
+
+        // Delete member function
+        function deleteMember(memberId, memberName, memberDiv) {
+            if (confirm(`Are you sure you want to delete circle ${memberName}?`)) {
+                fetch(`/delete-session/${id}/${memberId}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Member deleted successfully');
+                            memberDiv.remove();
+                        } else {
+                            alert('Failed to delete member');
+                        }
+                    })
+                    .catch(error => console.error('Error deleting member:', error));
+            }
+        }
+
+        document.getElementById('returnButton').addEventListener('click', function () {
+            window.location.href = '/circles';  // Redirects to the /circles page
+        });
+
+        fetchButton.click()
+    </script>
+</body>
+
+</html>
